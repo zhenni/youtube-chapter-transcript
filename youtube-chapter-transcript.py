@@ -74,7 +74,7 @@ class YoutubeChaptersFinder:
 youtube_chapters_getter = YoutubeChaptersFinder()
 
 
-def get_chapters(vid):
+def get_chapters(vid, verbose=False):
     chapters = youtube_chapters_getter.get_chapter(vid)
 
     def format_duration(time):
@@ -91,7 +91,8 @@ def get_chapters(vid):
         times.append(format_duration(chapter['time']))
         chaps.append(chapter['title'])
         curls.append(chapter['url'])
-        print(chapter['time'], format_duration(chapter['time']), chapter['title'], chapter['url'])
+        if verbose:
+            print(chapter['time'], format_duration(chapter['time']), chapter['title'], chapter['url'])
     # print(chapters)
     return times, chaps, curls
 
@@ -204,27 +205,37 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-u', '--url', type=str, default=None)
     parser.add_argument('-id', '--youtube_id', type=str, default=None)
+    parser.add_argument('-c', '--chapter_id', type=int, default=None)
     args = parser.parse_args()
 
     vid = args.youtube_id if args.youtube_id else get_video_id(args.url)
 
+    print("\n")
     print(get_video_title(vid))
+    print("\n")
     print(f"Image Link: {get_max_image_url(vid)}")
     print("\n")
     
-    times, chaps, curls = get_chapters(vid)
-    times.append(youtube_chapters_getter.get_length(vid))
-    
-    script = get_script(vid)
-    print("\n")
+    if not args.chapter_id:
+        
+        times, chaps, curls = get_chapters(vid, verbose=True)
+        print("\n")
+        print(f"Input the index of chapter: 1-{len(chaps)-1} (chapter 0 is intro) -c $cid \n")
 
-    formatter = ChapterFormatter()
-    cid = int(input(f"Input the index of chapter: 1-{len(chaps)-1} (chapter 0 is intro)"))
-    chap = chaps[cid]
-    start, end = times[cid], times[cid+1]
-    ts_chap = formatter.format_transcript(script, start=start, end=end)
-    print(cid+1, chap, curls[cid])
-    print(ts_chap) 
+    else:
+
+        cid = args.chapter_id
+        times, chaps, curls = get_chapters(vid, verbose=False)
+        times.append(youtube_chapters_getter.get_length(vid))
+        
+        script = get_script(vid)
+
+        formatter = ChapterFormatter()
+        chap = chaps[cid]
+        start, end = times[cid], times[cid+1]
+        ts_chap = formatter.format_transcript(script, start=start, end=end)
+        print(cid+1, chap, curls[cid])
+        print(ts_chap) 
     
 
 
