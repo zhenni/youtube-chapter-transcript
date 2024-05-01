@@ -73,28 +73,29 @@ class YoutubeChaptersFinder:
 
 youtube_chapters_getter = YoutubeChaptersFinder()
 
+def format_duration(time):
+    ts = time.split(':')
+    sec = int(ts[-1])
+    sec = int(ts[-2])*60 + sec if len(ts) > 1 else sec
+    sec = int(ts[-3])*60*60 + sec if len(ts) > 2 else sec
+    return sec
+
 
 def get_chapters(vid, verbose=False):
     chapters = youtube_chapters_getter.get_chapter(vid)
 
-    def format_duration(time):
-        ts = time.split(':')
-        sec = int(ts[-1])
-        sec = int(ts[-2])*60 + sec if len(ts) > 1 else sec
-        sec = int(ts[-3])*60*60 + sec if len(ts) > 2 else sec
-        return sec
-
+    times_orig = []
     times = []
     chaps = []
     curls = []
     for chapter in chapters:
+        times_orig.append(chapter['time'])
         times.append(format_duration(chapter['time']))
         chaps.append(chapter['title'])
         curls.append(chapter['url'])
         if verbose:
-            print(chapter['time'], format_duration(chapter['time']), chapter['title'], chapter['url'])
-    # print(chapters)
-    return times, chaps, curls
+            print(times_orig[-1], times[-1], chaps[-1], curls[-1])
+    return times_orig, times, chaps, curls
 
 
 def get_video_title(video_id):
@@ -218,14 +219,14 @@ if __name__ == "__main__":
     
     if not args.chapter_id:
         
-        times, chaps, curls = get_chapters(vid, verbose=True)
+        _, times, chaps, curls = get_chapters(vid, verbose=True)
         print("\n")
         print(f"Input the index of chapter: 1-{len(chaps)-1} (chapter 0 is intro) -c $cid \n")
 
     else:
 
         cid = args.chapter_id
-        times, chaps, curls = get_chapters(vid, verbose=False)
+        _, times, chaps, curls = get_chapters(vid, verbose=False)
         times.append(youtube_chapters_getter.get_length(vid))
         
         script = get_script(vid)
