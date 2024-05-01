@@ -46,18 +46,21 @@ def main():
         times.append(youtube_chapters_getter.get_length(vid))
         
         script = get_script(vid)
+        if not script:
+            put_markdown("---", sanitize=True, scope='result-box')
+            put_markdown("No transcript find", sanitize=True, scope='result-box')
+        else:
+            formatter = ChapterFormatter()
+            chap = chaps[cid]
+            start, end = times[cid], times[cid+1]
+            ts_chap = formatter.format_transcript(script, start=start, end=end)
 
-        formatter = ChapterFormatter()
-        chap = chaps[cid]
-        start, end = times[cid], times[cid+1]
-        ts_chap = formatter.format_transcript(script, start=start, end=end)
-
-        put_markdown("---", sanitize=True, scope='result-box')
-        put_markdown("{}, {}, {}".format(
-                cid, chap, curls[cid]
-                ), sanitize=True, scope='result-box')
-        put_markdown("---", sanitize=True, scope='result-box')
-        put_markdown(ts_chap, sanitize=True, scope='result-box')
+            put_markdown("---", sanitize=True, scope='result-box')
+            put_markdown("{}, {}, {}".format(
+                    cid, chap, curls[cid]
+                    ), sanitize=True, scope='result-box')
+            put_markdown("---", sanitize=True, scope='result-box')
+            put_markdown(ts_chap, sanitize=True, scope='result-box')
 
     
 
